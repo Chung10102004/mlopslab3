@@ -1,0 +1,31 @@
+groups:
+  - name: ml-api-alerts
+    rules:
+      # Quy tắc 1: Cảnh báo khi tỷ lệ lỗi server (5xx) cao
+      - alert: HighServerErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="ml-api", status=~"5.."}[2m]))
+            /
+            sum(rate(http_requests_total{job="ml-api"}[2m]))
+          ) * 100 > 50
+        for: 1m # Điều kiện phải đúng trong 1 phút mới kích hoạt
+        labels:
+          severity: critical # Nhãn để định tuyến trong Alertmanager
+        annotations:
+          summary: "High Server Error Rate on ml-api (instance {{ $labels.instance }})"
+          description: "Error rate is {{ $value | printf `%.2f` }}%, which is above the 50% threshold."
+
+      # Quy tắc 2: Cảnh báo khi độ tin cậy của model thấp
+      - alert: LowModelConfidence
+        expr: |
+          rate(model_prediction_confidence_sum{job="ml-api"}[5m])
+          /
+          rate(model_prediction_confidence_count{job="ml-api"}[5m])
+          < 0.75
+        for: 1m # Phải duy trì dưới 0.6 trong 10 phút
+        labels:
+          severity: warning
+        annotations:
+          summary: "Model confidence is low on ml-api (instance {{ $labels.instance }})"
+          description: "Average model confidence has dropped to {{ $value | printf `%.2f` }}, which is below the 0.6 threshold. This could indicate data drift."

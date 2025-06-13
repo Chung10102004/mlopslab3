@@ -1,0 +1,39 @@
+# File cấu hình Alertmanager để gửi tất cả cảnh báo qua email.
+
+global:
+  # Cấu hình máy chủ SMTP để gửi email.
+  # Chúng ta sẽ dùng Gmail làm ví dụ.
+  smtp_smarthost: 'smtp.gmail.com:587'
+  
+  # BẠN PHẢI THAY ĐỔI EMAIL NÀY: Đây là tài khoản Gmail sẽ được dùng để gửi đi.
+  smtp_from: '22520161@gm.uit.edu.vn' 
+  
+  # Tên đăng nhập, thường giống với email gửi đi.
+  smtp_auth_username: '22520161@gm.uit.edu.vn'
+  
+  # BẠN PHẢI THAY ĐỔI MẬT KHẨU NÀY: Đây không phải là mật khẩu Gmail thông thường.
+  # Đây là "Mật khẩu ứng dụng" (App Password) bạn tạo trong tài khoản Google.
+  smtp_auth_password: 'ubtibyxddkkljtkl'
+
+route:
+  # Đây là receiver mặc định. Tất cả các cảnh báo sẽ được gửi đến đây.
+  receiver: 'default-email-receiver'
+  
+  # Các cài đặt để nhóm cảnh báo, tránh bị spam email.
+  # Nhóm các cảnh báo có cùng tên lại với nhau.
+  group_by: ['alertname', 'job']
+  # Chờ 30 giây trước khi gửi thông báo cho một nhóm cảnh báo mới.
+  group_wait: 30s
+  # Chờ 5 phút trước khi gửi thông báo cho các cảnh báo mới trong một nhóm đã được thông báo.
+  group_interval: 5m
+  # Gửi lại thông báo sau mỗi 4 giờ nếu cảnh báo vẫn còn.
+  repeat_interval: 4h
+
+receivers:
+  # Định nghĩa receiver duy nhất của chúng ta.
+  - name: 'default-email-receiver'
+    email_configs:
+      # Email sẽ nhận cảnh báo.
+      - to: 'mh15497@gmail.com'
+        # Gửi thêm một email thông báo khi sự cố đã được giải quyết.
+        send_resolved: true
